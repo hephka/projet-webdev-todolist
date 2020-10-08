@@ -1,0 +1,14 @@
+{
+  "name": "projet-web-dev",
+  "version": "1.0.0",
+  "author": "hephka <franckthevenin95@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./": "./src/"
+  },
+  "devDependencies": {
+    "eslint": "^7.10.0",
+    "prettier": "^2.1.2"
+  }
+}
