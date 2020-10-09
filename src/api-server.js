@@ -18,7 +18,7 @@ try {
 
 // Local network configuration
 const IP = '192.168.1.5'
-const PORT = 7777
+const PORT = 7778
 
 const app = express()
 
@@ -97,10 +97,10 @@ app.use(getUserByApiKey)
 // POST create todo
 app.post('/create', async (req, res) => {
     const content = req.body.content
-    const owner_id = req.user.id
+    const owner = req.user.id
     try {
         const task = await Todo.create({
-            owner_id: owner_id,
+            owner_id: owner,
             content: content,
         })
         res.status(200).json({ code: 200, data: task })
@@ -113,16 +113,16 @@ app.post('/delete', async (req, res) => {
     const id = req.body.id
     try {
         const task = await Todo.destroy({
-            where: {id: id}
+            where: { id: id },
         })
         res.status(200).json({
             code: 200,
-            data: task
+            data: task,
         })
     } catch (e) {
         res.status(500).json({
             code: 500,
-            data: 'Internal server error'
+            data: 'Internal server error',
         })
     }
 })
@@ -130,15 +130,15 @@ app.post('/delete', async (req, res) => {
 app.get('/done/:id', async (req, res) => {
     try {
         const task = req.params.id
-        await Todo.update({done: true}, {where: {id: task}})
+        await Todo.update({ done: true }, { where: { id: task } })
         res.status(200).json({
             code: 200,
-            data: `Task ${task} is done.`
+            data: `Task ${task} is done.`,
         })
     } catch (e) {
         res.status(500).json({
             code: 500,
-            data: 'Internal server error'
+            data: 'Internal server error',
         })
     }
 })
@@ -146,16 +146,64 @@ app.get('/done/:id', async (req, res) => {
 app.get('/undone/:id', async (req, res) => {
     try {
         const task = req.params.id
-        await Todo.update({ done: false}, {where: {id: task}})
+        await Todo.update({ done: false }, { where: { id: task } })
         res.status(200).json({
             code: 200,
-            data: `Task ${task} is undone.`
+            data: `Task ${task} is undone.`,
         })
     } catch (e) {
         res.status(500).json({
             code: 500,
-            data: 'Internal server error'
+            data: 'Internal server error',
         })
+    }
+})
+
+app.get('/list/:filter', async (req, res) => {
+    const filter = req.params.filter
+    const owner = req.user.id
+
+    if (filter === 'all') {
+        try {
+            const todo = await Todo.findAll({
+                attributes: ['id', 'content', 'done', 'owner_id'],
+                where: { owner_id: owner },
+            })
+
+            res.status(200).json({ code: 200, data: todo })
+        } catch (e) {
+            res.status(500).json({ code: 500, data: 'Internal server error.' })
+        }
+    }
+    if (filter === 'done') {
+        try {
+            const todo = await Todo.findAll({
+                attributes: ['id', 'content', 'done', 'owner_id'],
+                where: {
+                    owner_id: owner,
+                    done: true,
+                },
+            })
+
+            res.status(200).json({ code: 200, data: todo })
+        } catch (e) {
+            res.status(500).json({ code: 500, data: 'Internal server error.' })
+        }
+    }
+    if (filter === 'undone') {
+        try {
+            const todo = await Todo.findAll({
+                attributes: ['id', 'content', 'done', 'owner_id'],
+                where: {
+                    owner_id: owner,
+                    done: false,
+                },
+            })
+
+            res.status(200).json({ code: 200, data: todo })
+        } catch (e) {
+            res.status(500).json({ code: 500, data: 'Internal server error.' })
+        }
     }
 })
 
